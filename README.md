@@ -4,6 +4,11 @@ Editor agnostic realtime pair programing with git as backend (PoC)
 
 ## Setup
 
+Dependencies:
+- git
+- ssh
+- inotify-tools
+
 Copy source and add to ```PATH```.
 
 ```sh
@@ -42,11 +47,10 @@ Then you can start editing files.
 
 ```sh
 echo It is awesome >> a-file
-pairon sync
 ```
 
-Each time you do ```pairon sync``` your changes will be pushed out to the
-connected repo.
+To get the best experience in your editor enable auto-save and auto-reloading of
+files. The faster to save/reload files the better.
 
-Check out the ```editor-plugins``` directory for the best experience with your
-editor.
+Check out the ```editor-plugins``` directory for plugins/settings that match
+your editor.

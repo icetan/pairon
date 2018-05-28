@@ -11,9 +11,9 @@ autosave-disable %{
   remove-hooks buffer autosave
 }
 
-def -docstring %{pairon-sync: pairon sync this buffer} \
+def -docstring %{pairon-sync: pairon full sync} \
 pairon-sync %{ %sh{
-  ( pairon sync "${kak_buffile}" 2>&1 ) > /dev/null 2>&1 < /dev/null &
+  ( pairon sync -f 2>&1 ) > /dev/null 2>&1 < /dev/null &
 }}
 
 decl -docstring "name of the client in which utilities display information" \
@@ -43,7 +43,6 @@ pairon-enable %{
       && printf %s\\n 'eval %{
         autosave-enable
         set buffer autoreload yes
-        hook -group pairon buffer BufWritePost .* pairon-sync
       }'
   }}
 }
@@ -52,6 +51,5 @@ def -docstring %{pairon-enable: disable pairon sync} \
 pairon-disable %{
   autosave-disable
   set buffer autoreload ask
-  remove-hooks buffer pairon
   remove-hooks global pairon
 }
