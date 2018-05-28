@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+source common.sh
+
+while test "$1"; do
+  case "$1" in
+    -f|--force) force=1;shift;;
+    -*) die "$1 is not an option";;
+    *)
+      if test -f "$1"; then
+        LOCAL="$(cd "$(dirname "$1")";pwd)"
+        LOCAL_FILE="$LOCAL/`basename "$1"`";
+      else
+        LOCAL="$(cd "$1";pwd)";
+        LOCAL_FILE="$LOCAL";
+      fi
+      shift;;
+  esac
+done
+
+setrepo "${LOCAL-.}"
+
+set -x
+
+#lock_file="$GIT_DIR/.sync"
+#if [ -f "$lock_file" ]; then
+#  die "Already syncing on this repo ($lock_file)"
+#fi
+#touch "$lock_file"
+#trap 'trap - TERM && rm -f "$lock_file"' INT TERM EXIT
+
+if [ "$force" ]; then
+  sync_force "$LOCAL_FILE"
+else
+  sync_patch "$LOCAL_FILE" || info "Nothing to sync"
+fi

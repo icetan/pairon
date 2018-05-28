@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+source common.sh
+
+quiet() {
+  cat &>/dev/null
+}
+print='cat'
+
+while test "$1"; do
+  case "$1" in
+    -q|--quiet) print='quiet';shift;;
+    -*) die "$1 is not an option";;
+    *) LOCAL="$1";shift;;
+  esac
+done
+
+set -o pipefail
+pairon_path "${LOCAL-.}" | $print

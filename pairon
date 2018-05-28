@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+source common.sh
+
+usage() {
+  [ -n "$1" ] && echo >&2 "Error: $1"
+  echo >&2 "
+Usage: $SCRIPT_NAME COMMAND OPTIONS
+  Commands:
+$PLUGINS
+"
+  exit 1
+}
+
+PLUGINS=`compgen -A function -ac | sed -n 's/^pairon-//p' | sort | uniq`
+CMD="$1";shift
+
+if ([ "$CMD" ] && (echo "$PLUGINS" | grep -Eq "^$CMD$")); then
+  exec pairon-$CMD $@
+else
+  usage "No command: $CMD"
+fi

@@ -1,0 +1,40 @@
+#!/bin/bash
+set -e
+
+source common.sh
+
+while test "$1"; do
+  case "$1" in
+    -n|--no-commit) no_commit=1;shift;;
+    -*) die "$1 is not an option";;
+    *) arg="$1";shift
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      ;;
+  esac
+done
+
+mkrepo() {
+  (cd "$1"
+    export GIT_WORK_TREE="$PWD"
+    export GIT_DIR="$GIT_WORK_TREE/.pairon"
+    git init --share=group --template="$SCRIPT_DIR/template"
+    initrepo "$PWD"
+    if [ ! "$no_commit" ]; then
+      git add .
+      git commit --allow-empty -m "pairon auto inito" || true
+    fi
+  )
+}
+
+grep -q : <<<"$LOCAL" && remote_mode=1
+
+if [ "$remote_mode" ]; then
+  dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
+  mkrepo "$dest"
+  scp -r "$dest" "$LOCAL"
+  rm -rf "$dest"
+else
+  pairon_path "$LOCAL" &>/dev/null && stop "This is already a pairon repo" || true
+  mkdir -p "$LOCAL"
+  mkrepo "$LOCAL"
+fi

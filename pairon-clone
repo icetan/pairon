@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+source common.sh
+
+while test "$1"; do
+  case "$1" in
+    -*) die "$1 is not an option";;
+    *) arg="$1";shift
+      test "$REMOTE" || { REMOTE="$arg";continue; }
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      ;;
+  esac
+done
+
+test "$REMOTE" || die "No remote given"
+test "$LOCAL" || die "No local directory given"
+
+git clone --template="$SCRIPT_DIR/template" "$REMOTE/.pairon" "$LOCAL"
+mv "$LOCAL"/.{git,pairon}
+chmod -R g+rw "$LOCAL"
+chmod g+s `find "$LOCAL" -type d`
+initrepo "$LOCAL"
