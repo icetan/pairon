@@ -15,7 +15,6 @@ initrepo() {
   (cd "$1"
     echo .pairon/ > .pairon/ignore
     touch .pairon/produce
-    touch .pairon/consume
     git config -f .pairon/config core.sharedRepository group
     git config -f .pairon/config core.excludesfile .pairon/ignore
     git config -f .pairon/config user.email "$(whoami)@$(hostname)"
@@ -42,8 +41,9 @@ sync_commit() {
 }
 sync_patch() {
   set -x
-  sync_commit "$1" \
-    && { git format-patch --stdout -p HEAD^;echo -en '\0'; } >> "$CONSUME_FILE"
+  test -e "$CONSUME_FILE" \
+    && sync_commit "$1" \
+    && { git format-patch --stdout -p HEAD^; } >> "$CONSUME_FILE"
 }
 sync_merge() {
   git pull --commit -s recursive -X ours || {

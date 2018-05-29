@@ -32,8 +32,9 @@ autosync() {
 
 start_push() {
   info "Pushing"
+  touch "$CONSUME_FILE"
+  trap "rm -f $CONSUME_FILE" EXIT
   while true; do
-    #tail -f -n0 $CONSUME_FILE | $ssh_mode tee -a "$REMOTE_FILE/produce"
     tail -f -n0 "$CONSUME_FILE" | $ssh_mode "$REMOTE_FILE/bare-listen" "$REMOTE_FILE/.." || {
       warn "Push failed, rebasing"
       sync_force "$LOCAL" || true
