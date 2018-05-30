@@ -14,23 +14,23 @@ connect() {
 REMOTE="${1}"
 LOCAL="${2-.}"
 
-if [ "$REMOTE" ]; then
+if test -n "$REMOTE"; then
   REMOTE_FILE="${REMOTE#*:}"
   echo "$REMOTE" | grep -q : && ssh_mode="ssh ${REMOTE%%:*} -- "
 
   $ssh_mode test -d "$REMOTE_FILE" || remote_empty=1
-  [ -d "$LOCAL" ] && [ "`find "$LOCAL"/* -maxdepth 0`" ] || local_empty=1
+  test -d "$LOCAL" && test -n "`find "$LOCAL"/* -maxdepth 0`" || local_empty=1
 
-  if [ "$local_empty" ] && [ "$remote_empty" ]; then
+  if test -n "$local_empty" && test -n "$remote_empty"; then
     pairon init "$REMOTE"
     pairon clone "$REMOTE" "$LOCAL"
-  elif [ ! "$local_empty" ] && [ "$remote_empty" ]; then
+  elif test -z "$local_empty" && test -n "$remote_empty"; then
     pairon init --no-commit "$REMOTE"
     pairon init "$LOCAL"
     connect "$LOCAL" "$REMOTE"
-  elif [ "$local_empty" ] && [ ! "$remote_empty" ]; then
+  elif test -n "$local_empty" && test -z "$remote_empty"; then
     pairon clone "$REMOTE" "$LOCAL"
-  elif [ ! "$local_empty" ] && [ ! "$remote_empty" ]; then
+  elif test -z "$local_empty" && test -z "$remote_empty"; then
     pairon init "$LOCAL"
     connect "$LOCAL" "$REMOTE"
   fi

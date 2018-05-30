@@ -15,11 +15,11 @@ rtrav() {
 info() { echo >&2 INFO: $@; }
 warn() { echo >&2 WARNING: $@; }
 die() {
-  [ -n "$1" ] && echo >&2 "Error: $1"
+  test -n "$1" && echo >&2 "Error: $1"
   exit 1
 }
 stop() {
-  [ -n "$1" ] && echo >&2 "$1"
+  test -n "$1" && echo >&2 "$1"
   exit 0
 }
 initrepo() {
@@ -54,7 +54,7 @@ sync_merge() {
 }
 sync_push() {
   RETRY_COUNT=`expr $RETRY_COUNT + 1`
-  [ $RETRY_COUNT -le $MAX_RETRY ] || die "Reached max pull retry count"
+  test $RETRY_COUNT -le $MAX_RETRY || die "Reached max pull retry count"
   git push || {
     sync_merge || true
     echo >&2 "INFO: Retrying $RETRY_COUNT"

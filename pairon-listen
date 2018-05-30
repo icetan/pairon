@@ -15,7 +15,7 @@ LOCAL="${arg:-.}"
 setrepo "$LOCAL"
 
 lock_file="$GIT_DIR/.listen"
-if [ -f "$lock_file" ]; then
+if test -f "$lock_file"; then
   die "Already listening on this repo ($lock_file)"
 fi
 echo $$ > "$lock_file"

@@ -19,7 +19,7 @@ mkrepo() {
     export GIT_DIR="$GIT_WORK_TREE/.pairon"
     git init --share=group --template="$SCRIPT_DIR/template"
     initrepo "$PWD"
-    if [ ! "$no_commit" ]; then
+    if test -z "$no_commit"; then
       git add .
       git commit --allow-empty -m "pairon auto inito" || true
     fi
@@ -28,7 +28,7 @@ mkrepo() {
 
 echo "$LOCAL" | grep -q : && remote_mode=1
 
-if [ "$remote_mode" ]; then
+if test -n "$remote_mode"; then
   dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
   mkrepo "$dest"
   scp -r "$dest" "$LOCAL"

@@ -4,7 +4,7 @@ set -e
 . "$(dirname $(realpath $0))/common.sh"
 
 usage() {
-  [ -n "$1" ] && echo >&2 "Error: $1"
+  test -n "$1" && echo >&2 "Error: $1"
   echo >&2 "
 USAGE: $SCRIPT_NAME COMMAND OPTIONS
 

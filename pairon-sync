@@ -21,15 +21,7 @@ else
 fi
 setrepo "$LOCAL"
 
-
-#lock_file="$GIT_DIR/.sync"
-#if [ -f "$lock_file" ]; then
-#  die "Already syncing on this repo ($lock_file)"
-#fi
-#touch "$lock_file"
-#trap 'trap - TERM && rm -f "$lock_file"' INT TERM EXIT
-
-if [ "$force" ]; then
+if test -n "$force"; then
   sync_force "$LOCAL_FILE"
 else
   sync_patch "$LOCAL_FILE" || info "Nothing to sync"
