@@ -8,13 +8,13 @@ usage() {
   echo >&2 "
 USAGE: $SCRIPT_NAME COMMAND OPTIONS
 
--- COMMANDS  --
+-- COMMANDS --
 $PLUGINS
 "
   exit 1
 }
 
-PLUGINS="$(cd "$SCRIPT_DIR"; find . -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
+PLUGINS="$(cd "$SCRIPT_DIR"; find . -type f -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
 CMD="$1"
 
 if { test -n "$CMD" && echo "$PLUGINS" | grep -Eq "^$CMD$"; }; then
