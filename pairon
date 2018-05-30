@@ -6,18 +6,20 @@ set -e
 usage() {
   [ -n "$1" ] && echo >&2 "Error: $1"
   echo >&2 "
-Usage: $SCRIPT_NAME COMMAND OPTIONS
-  Commands:
+USAGE: $SCRIPT_NAME COMMAND OPTIONS
+
+-- COMMANDS  --
 $PLUGINS
 "
   exit 1
 }
 
 PLUGINS="$(cd "$SCRIPT_DIR"; find . -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
-CMD="$1";shift
+CMD="$1"
 
-if { [ "$CMD" ] && { echo "$PLUGINS" | grep -Eq "^$CMD$"; }; }; then
+if { test -n "$CMD" && echo "$PLUGINS" | grep -Eq "^$CMD$"; }; then
+  shift
   exec "$SCRIPT_DIR/pairon-$CMD" $@
 else
-  usage "No command: $CMD"
+  usage "No command: '$CMD'"
 fi
