@@ -1,20 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
-
-quiet() {
-  cat &>/dev/null
-}
-print='cat'
+. "$(dirname $(realpath $0))/common.sh"
 
 while test "$1"; do
   case "$1" in
-    -q|--quiet) print='quiet';shift;;
+    -q|--quiet) quiet=1;shift;;
     -*) die "$1 is not an option";;
     *) LOCAL="$1";shift;;
   esac
 done
 
-set -o pipefail
-pairon_path "${LOCAL-.}" | $print
+path="`pairon_path "${LOCAL:-.}"`"
+test "$quiet" || echo "$path"

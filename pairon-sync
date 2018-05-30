@@ -1,27 +1,26 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
 while test "$1"; do
   case "$1" in
     -f|--force) force=1;shift;;
     -*) die "$1 is not an option";;
-    *)
-      if test -f "$1"; then
-        LOCAL="$(cd "$(dirname "$1")";pwd)"
-        LOCAL_FILE="$LOCAL/`basename "$1"`";
-      else
-        LOCAL="$(cd "$1";pwd)";
-        LOCAL_FILE="$LOCAL";
-      fi
-      shift;;
+    *) arg="${1:-.}";shift;;
   esac
 done
 
-setrepo "${LOCAL-.}"
+arg="${arg:-.}"
+if test -f "$arg"; then
+  LOCAL="$(cd "$(dirname "$arg")";pwd)"
+  LOCAL_FILE="$LOCAL/`basename "$arg"`";
+else
+  LOCAL="$(cd "$arg";pwd)";
+  LOCAL_FILE="$LOCAL";
+fi
+setrepo "$LOCAL"
 
-set -x
 
 #lock_file="$GIT_DIR/.sync"
 #if [ -f "$lock_file" ]; then

@@ -1,27 +1,33 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 unset XDG_CONFIG_HOME
 unset HOME
 export GIT_CONFIG_NOSYSTEM=1
 
-(cd "${1-.}"
+(cd "${1:-.}"
 
 export GIT_WORK_TREE="$PWD"
 export GIT_DIR="$GIT_WORK_TREE/.pairon"
 
-while read -r -d '' patch; do
-  echo >&2 "=== START PUSHED PATCH ==="
-  echo >&2 "$patch"
-  echo >&2 "=== END PUSHED PATCH ==="
+while IFS= read -r line; do
+  if test "$line" = "___END_OF_MESSAGE___"; then
+    echo >&2 "=== START PUSHED PATCH ==="
+    echo >&2 "$patch"
+    echo >&2 "=== END PUSHED PATCH ==="
 
-  if git am <<<"$patch"; then
-    { echo "$patch";echo -ne '\0'; } >> "$GIT_DIR/produce"
-    echo >&2 "INFO: Applied patch successfully"
+    if { echo "$patch" | git am; }; then
+      { echo "$patch";echo ___END_OF_MESSAGE___; } >> "$GIT_DIR/produce"
+      echo >&2 "INFO: Applied patch successfully"
+    else
+      git am --abort || true
+      echo >&2 "INFO: Apply patch failed"
+      exit 1
+    fi
+    patch=
   else
-    git am --abort || true
-    echo >&2 "INFO: Apply patch failed"
-    exit 1
+    patch="$patch$line
+"
   fi
 done
 )

@@ -1,10 +1,16 @@
-#!/bin/bash
+#!/bin/sh
 set -e
-shopt -s huponexit
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
-LOCAL="${1-.}"
+while test "$1"; do
+  case "$1" in
+    -n|--no-autosync) no_autosync=1;shift;;
+    -*) die "$1 is not an option";;
+    *) arg="$1";shift;;
+  esac
+done
+LOCAL="${arg:-.}"
 
 setrepo "$LOCAL"
 
@@ -13,52 +19,56 @@ if [ -f "$lock_file" ]; then
   die "Already listening on this repo ($lock_file)"
 fi
 echo $$ > "$lock_file"
-trap 'trap - TERM && rm -f "$lock_file"' INT TERM EXIT
+touch "$CONSUME_FILE"
+trap 'trap - TERM && rm -f "$lock_file" "$CONSUME_FILE"; kill -TERM 0' INT TERM EXIT
 
 REMOTE="$(git remote get-url origin)"
 SSH_HOST="${REMOTE%%:*}"
 REMOTE_FILE="${REMOTE#*:}"
 
-grep -q : <<<"$REMOTE" && ssh_mode="ssh $SSH_HOST -- "
+echo "$REMOTE" | grep -q : && ssh_mode="ssh $SSH_HOST -- "
 
 autosync() {
   (cd "$GIT_WORK_TREE"
-    export -f sync_patch sync_commit
     inotifywait -mrq -e "modify,delete,move" --exclude '(.pairon|.git)' . \
       | stdbuf -eL -oL sed 's/ [A-Z,_]* //' \
-      | xargs -L1 -I% sh -c 'sync_patch "%"'
+      | xargs -L1 -I% sh -c '. "'"$SCRIPT_DIR/sync_patch.sh"'"; sync_patch "%"'
   )
 }
 
 start_push() {
   info "Pushing"
-  touch "$CONSUME_FILE"
-  trap "rm -f $CONSUME_FILE" EXIT
   while true; do
     tail -f -n0 "$CONSUME_FILE" | $ssh_mode "$REMOTE_FILE/bare-listen" "$REMOTE_FILE/.." || {
       warn "Push failed, rebasing"
-      sync_force "$LOCAL" || true
+      sync_force "$LOCAL"
     }
   done
 }
 
 start_pull() {
   info "Listening"
-  $ssh_mode tail -f -n0 "$REMOTE_FILE/produce" | while read -r -d '' patch; do
-    echo >&2 "=== START PULLING PATCH ==="
-    echo >&2 "$patch"
-    echo >&2 "=== END PULLING PATCH ==="
+  $ssh_mode tail -f -n0 "$REMOTE_FILE/produce" | while IFS= read -r line; do
+    if test "$line" = "___END_OF_MESSAGE___"; then
+      echo >&2 "=== START PULLING PATCH ==="
+      echo >&2 "$patch"
+      echo >&2 "=== END PULLING PATCH ==="
 
-    hash=$(head -n1 <<<"$patch" | grep -oE " [a-f0-9]{40} ")
+      hash=$(echo "$patch" | head -n1 | grep -oE " [a-f0-9]{40} ")
 
-    if git rev-list --quiet -n1 $hash; then
-      info "Patch already applied, skipping"
-    elif git am <<<"$patch"; then
-      info "Applied patch successfully"
+      if git rev-list --quiet -n1 $hash; then
+        info "Patch already applied, skipping"
+      elif { echo "$patch" | git am; }; then
+        info "Applied patch successfully"
+      else
+        git am --abort || true
+        info "Apply patch failed, rebasing"
+        sync_force "$LOCAL"
+      fi
+      patch=
     else
-      git am --abort || true
-      info "Apply patch failed, rebasing"
-      sync_force "$LOCAL" || true
+      patch="$patch$line
+"
     fi
   done
 }
@@ -67,9 +77,13 @@ sync_force "$LOCAL"
 
 start_pull &
 echo $! >> "$lock_file"
+
 start_push &
 echo $! >> "$lock_file"
-autosync &
-echo $! >> "$lock_file"
+
+if test ! "$no_autosync"; then
+  autosync &
+  echo $! >> "$lock_file"
+fi
 
 wait

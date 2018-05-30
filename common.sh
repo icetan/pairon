@@ -1,3 +1,14 @@
+exec 0<&-
+
+SCRIPT_NAME="$(basename "$0")"
+SCRIPT_DIR="$(dirname $(realpath "$0"))"
+
+export GIT_CONFIG_NOSYSTEM=1
+unset XDG_CONFIG_HOME
+unset HOME
+
+. "$SCRIPT_DIR/sync_patch.sh"
+
 rtrav() {
   test -e $2/$1 && printf %s "$2" || { test $2 != / && rtrav $1 `dirname $2`; }
 }
@@ -13,7 +24,6 @@ stop() {
 }
 initrepo() {
   (cd "$1"
-    echo .pairon/ > .pairon/ignore
     touch .pairon/produce
     git config -f .pairon/config core.sharedRepository group
     git config -f .pairon/config core.excludesfile .pairon/ignore
@@ -30,21 +40,11 @@ setrepo() {
   export CONSUME_FILE="$worktree/.pairon/consume"
 }
 pairon_path () {
-  rtrav .pairon "$(cd "${1-.}" &>/dev/null || cd "$(dirname "${1-.}")";pwd)"
+  rtrav .pairon "$({ cd "${1:-.}" || cd "$(dirname "${1:-.}")"; } >/dev/null 2>&1 && pwd)"
 }
 
 # SYNC
 MAX_RETRY=20
-sync_commit() {
-  git add -A "${1-$GIT_WORK_TREE}" &>/dev/null
-  git commit -m "pairon auto commito" &>/dev/null
-}
-sync_patch() {
-  set -x
-  test -e "$CONSUME_FILE" \
-    && sync_commit "$1" \
-    && { git format-patch --stdout -p HEAD^; } >> "$CONSUME_FILE"
-}
 sync_merge() {
   git pull --commit -s recursive -X ours || {
     echo >&2 "WARNING: Couldn't resolve merge, doing a hard reset"
@@ -53,7 +53,8 @@ sync_merge() {
   }
 }
 sync_push() {
-  ((RETRY_COUNT++<MAX_RETRY)) || die "Reached max pull retry count"
+  RETRY_COUNT=`expr $RETRY_COUNT + 1`
+  [ $RETRY_COUNT -le $MAX_RETRY ] || die "Reached max pull retry count"
   git push || {
     sync_merge || true
     echo >&2 "INFO: Retrying $RETRY_COUNT"
@@ -66,13 +67,3 @@ sync_force() {
   sync_merge
   sync_push
 }
-
-exec 0<&-
-
-SCRIPT_NAME="$(basename $0)"
-SCRIPT_DIR="$(cd `dirname $0`;pwd)"
-
-export PATH="$PATH:$SCRIPT_DIR"
-export GIT_CONFIG_NOSYSTEM=1
-unset XDG_CONFIG_HOME
-unset HOME

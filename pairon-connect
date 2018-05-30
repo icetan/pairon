@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
 connect() {
   setrepo "$1"
   git remote add origin "$2/.pairon" \
     || git remote set-url origin "$2/.pairon" \
     || true
-  git push -u origin master &>/dev/null || true
+  git push -u origin master >/dev/null 2>&1 || true
 }
 
 REMOTE="${1}"
@@ -16,21 +16,21 @@ LOCAL="${2-.}"
 
 if [ "$REMOTE" ]; then
   REMOTE_FILE="${REMOTE#*:}"
-  grep -q : <<<"$REMOTE" && ssh_mode="ssh ${REMOTE%%:*} -- "
+  echo "$REMOTE" | grep -q : && ssh_mode="ssh ${REMOTE%%:*} -- "
 
   $ssh_mode test -d "$REMOTE_FILE" || remote_empty=1
-  [[ -d "$LOCAL" && "`find "$LOCAL"/* -maxdepth 0`" ]] || local_empty=1
+  [ -d "$LOCAL" ] && [ "`find "$LOCAL"/* -maxdepth 0`" ] || local_empty=1
 
-  if [[ "$local_empty" && "$remote_empty" ]]; then
+  if [ "$local_empty" ] && [ "$remote_empty" ]; then
     pairon init "$REMOTE"
     pairon clone "$REMOTE" "$LOCAL"
-  elif [[ ! "$local_empty" && "$remote_empty" ]]; then
+  elif [ ! "$local_empty" ] && [ "$remote_empty" ]; then
     pairon init --no-commit "$REMOTE"
     pairon init "$LOCAL"
     connect "$LOCAL" "$REMOTE"
-  elif [[ "$local_empty" && ! "$remote_empty" ]]; then
+  elif [ "$local_empty" ] && [ ! "$remote_empty" ]; then
     pairon clone "$REMOTE" "$LOCAL"
-  elif [[ ! "$local_empty" && ! "$remote_empty" ]]; then
+  elif [ ! "$local_empty" ] && [ ! "$remote_empty" ]; then
     pairon init "$LOCAL"
     connect "$LOCAL" "$REMOTE"
   fi

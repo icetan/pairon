@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
 while test "$1"; do
   case "$1" in
@@ -17,7 +17,7 @@ test "$REMOTE" || die "No remote given"
 test "$LOCAL" || die "No local directory given"
 
 git clone --template="$SCRIPT_DIR/template" "$REMOTE/.pairon" "$LOCAL"
-mv "$LOCAL"/.{git,pairon}
+mv "$LOCAL/.git" "$LOCAL/.pairon"
 chmod -R g+rw "$LOCAL"
 chmod g+s `find "$LOCAL" -type d`
 initrepo "$LOCAL"

@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/sh
 set -e
 
 unset XDG_CONFIG_HOME
@@ -8,7 +7,7 @@ export GIT_CONFIG_NOSYSTEM=1
 
 while read OLDSHA NEWSHA REF; do
   for SHA in `git rev-list --reverse $OLDSHA..$NEWSHA`; do
-    git format-patch --stdout -p $SHA^..$SHA;echo -en '\0'
+    git format-patch --stdout -p $SHA^..$SHA;echo ___END_OF_MESSAGE___
   done >> produce
 done
 

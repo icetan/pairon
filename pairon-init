@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
 while test "$1"; do
   case "$1" in
@@ -26,7 +26,7 @@ mkrepo() {
   )
 }
 
-grep -q : <<<"$LOCAL" && remote_mode=1
+echo "$LOCAL" | grep -q : && remote_mode=1
 
 if [ "$remote_mode" ]; then
   dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
@@ -34,7 +34,7 @@ if [ "$remote_mode" ]; then
   scp -r "$dest" "$LOCAL"
   rm -rf "$dest"
 else
-  pairon_path "$LOCAL" &>/dev/null && stop "This is already a pairon repo" || true
+  pairon_path "$LOCAL" >/dev/null 2>&1 && stop "This is already a pairon repo" || true
   mkdir -p "$LOCAL"
   mkrepo "$LOCAL"
 fi

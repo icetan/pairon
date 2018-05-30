@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-source common.sh
+. "$(dirname $(realpath $0))/common.sh"
 
 usage() {
   [ -n "$1" ] && echo >&2 "Error: $1"
@@ -13,11 +13,11 @@ $PLUGINS
   exit 1
 }
 
-PLUGINS=`compgen -A function -ac | sed -n 's/^pairon-//p' | sort | uniq`
+PLUGINS="$(cd "$SCRIPT_DIR"; find . -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
 CMD="$1";shift
 
-if ([ "$CMD" ] && (echo "$PLUGINS" | grep -Eq "^$CMD$")); then
-  exec pairon-$CMD $@
+if { [ "$CMD" ] && { echo "$PLUGINS" | grep -Eq "^$CMD$"; }; }; then
+  exec "$SCRIPT_DIR/pairon-$CMD" $@
 else
   usage "No command: $CMD"
 fi
