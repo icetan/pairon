@@ -14,7 +14,7 @@ in stdenv.mkDerivation rec {
     mkdir -p $out/bin
     cp -r . $out/src
     makeWrapper $out/src/pairon $out/bin/pairon \
-      --prefix PATH : ${makeBinPath [ openssh git ]}
+      --prefix PATH : ${makeBinPath [ openssh git inotify-tools ]}
     runHook postInstall
   '';
 
