@@ -16,6 +16,12 @@ git clone https://github.com/icetan/pairon
 export PATH=$PWD/pairon:$PATH
 ```
 
+Or using Nix:
+
+```sh
+nix-env -i -f ./pairon
+```
+
 ## Usage
 
 Start a central pairon share by first creating a shared ssh user.
