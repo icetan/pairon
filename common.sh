@@ -9,6 +9,7 @@ unset HOME
 
 . "$SCRIPT_DIR/sync_patch.sh"
 
+alias linebuf='stdbuf -eL -oL'
 rtrav() {
   test -e $2/$1 && printf %s "$2" || { test $2 != / && rtrav $1 `dirname $2`; }
 }
@@ -66,4 +67,25 @@ sync_force() {
   sync_commit "$1" || true
   sync_merge
   sync_push
+}
+
+fsw() {
+  local path="$1"
+  local exclude="$2"
+  if command -v inotifywait; then
+    info "Using inotify"
+    inotifywait -mr --exclude "$exclude" \
+       -e modify,create,delete,move "$path" \
+       --timefmt '%s' --format "%T '%w%f'" \
+    | linebuf uniq \
+    | linebuf sed 's/[0-9]* //'
+  else
+    info "Using fswatch"
+    fswatch -r --event Created --event Updated --event Removed \
+       --event Renamed \ --event MovedFrom --event MovedTo \
+       -f '%s' -t --format "'%p'" \
+       -e "$(echo "$exclude" | sed 's/|/\\|/g')" "$path" \
+    | linebuf uniq \
+    | linebuf sed 's/[0-9]* //'
+  fi
 }

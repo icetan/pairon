@@ -30,9 +30,8 @@ echo "$REMOTE" | grep -q : && ssh_mode="ssh $SSH_HOST -- "
 
 autosync() {
   (cd "$GIT_WORK_TREE"
-    inotifywait -mrq -e "modify,delete,move" --exclude '(.pairon|.git)' . \
-      | stdbuf -eL -oL sed 's/ [A-Z,_]* //' \
-      | xargs -L1 -I% sh -c '. "'"$SCRIPT_DIR/sync_patch.sh"'"; sync_patch "%"'
+    fsw . '.pairon|.git' \
+      | xargs -L1 -I% sh -c '. "'"$SCRIPT_DIR/sync_patch.sh"'";sync_patch "%"'
   )
 }
 

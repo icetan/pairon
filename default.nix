@@ -2,7 +2,8 @@
 
 let
   inherit (lib) cleanSource makeBinPath;
-in stdenv.mkDerivation rec {
+  inherit (stdenv) mkDerivation isLinux;
+in mkDerivation rec {
   version = "0.0.0";
   name = "pairon-${version}";
   buildInputs = [ makeWrapper ];
@@ -14,7 +15,11 @@ in stdenv.mkDerivation rec {
     mkdir -p $out/bin
     cp -r . $out/src
     makeWrapper $out/src/pairon $out/bin/pairon \
-      --prefix PATH : ${makeBinPath [ openssh git inotify-tools ]}
+      --prefix PATH : ${makeBinPath [
+        openssh
+        git
+        (if isLinux then inotify-tools else fswatch)
+      ]}
     runHook postInstall
   '';
 

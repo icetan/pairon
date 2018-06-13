@@ -7,19 +7,36 @@ Editor agnostic realtime pair programing with git as backend (PoC)
 Dependencies:
 - git
 - ssh
-- inotify-tools
+- inotify-tools or fswatch
 
-Copy source and add to ```PATH```.
+Copy source:
 
 ```sh
 git clone https://github.com/icetan/pairon
-export PATH=$PWD/pairon:$PATH
 ```
 
-Or using Nix:
+`pairon` using Nix:
 
 ```sh
 nix-env -i -f ./pairon
+```
+
+Without Nix on Debian or Ubuntu:
+
+```sh
+apt-get install git openssh inotify-tools
+```
+
+Or on Mac OS:
+
+```sh
+brew install git openssh fswatch
+```
+
+Add to ```PATH```:
+
+```sh
+export PATH=$PWD/pairon:$PATH
 ```
 
 ## Usage
