@@ -2,7 +2,13 @@
 
 Editor agnostic realtime pair programing with git as backend (PoC)
 
-## Setup
+## Install with Nix
+
+```sh
+nix-env -i -f https://github.com/icetan/pairon/archive/master.tar.gz
+```
+
+## Setup from source
 
 Dependencies:
 - git
