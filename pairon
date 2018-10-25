@@ -5,13 +5,13 @@ set -e
 . "$(dirname "$(realpath "$0")")/common.sh"
 
 usage() {
-  test -n "$1" && echo >&2 "Error: $1"
-  echo >&2 "
+  test -n "$1" && echo "Error: $1" >&2
+  echo "
 USAGE: $SCRIPT_NAME COMMAND OPTIONS
 
 -- COMMANDS --
 $PLUGINS
-"
+" >&2
   exit 1
 }
 

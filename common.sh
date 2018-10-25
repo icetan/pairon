@@ -20,14 +20,14 @@ rtrav() {
     { test "$2" != / && rtrav "$1" "$(dirname "$2")"; }
   fi
 }
-info() { echo >&2 "INFO: $*"; }
-warn() { echo >&2 "WARNING: $*"; }
+info() { echo "INFO: $*" >&2; }
+warn() { echo "WARNING: $*" >&2; }
 die() {
-  test -n "$1" && echo >&2 "Error: $1"
+  test -n "$1" && echo "Error: $1" >&2
   exit 1
 }
 stop() {
-  test -n "$1" && echo >&2 "$1"
+  test -n "$1" && echo "$1" >&2
   exit 0
 }
 initrepo() {
@@ -55,7 +55,7 @@ pairon_path () {
 MAX_RETRY=20
 sync_merge() {
   git pull --commit -s recursive -X ours || {
-    echo >&2 "WARNING: Couldn't resolve merge, doing a hard reset"
+    echo "WARNING: Couldn't resolve merge, doing a hard reset" >&2
     git merge --abort || true
     git reset --hard origin/master
   }
@@ -65,7 +65,7 @@ sync_push() {
   test "$RETRY_COUNT" -le "$MAX_RETRY" || die "Reached max pull retry count"
   git push || {
     sync_merge || true
-    echo >&2 "INFO: Retrying $RETRY_COUNT"
+    echo "INFO: Retrying $RETRY_COUNT" >&2
     sync_push
   }
 }

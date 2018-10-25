@@ -12,16 +12,16 @@ export GIT_DIR="$GIT_WORK_TREE/.pairon"
 
 while IFS= read -r line; do
   if test "$line" = "___END_OF_MESSAGE___"; then
-    echo >&2 "=== START PUSHED PATCH ==="
-    echo >&2 "$patch"
-    echo >&2 "=== END PUSHED PATCH ==="
+    echo "=== START PUSHED PATCH ===" >&2
+    echo "$patch" >&2
+    echo "=== END PUSHED PATCH ===" >&2
 
     if { echo "$patch" | git am; }; then
       { echo "$patch";echo ___END_OF_MESSAGE___; } >> "$GIT_DIR/produce"
-      echo >&2 "INFO: Applied patch successfully"
+      echo "INFO: Applied patch successfully" >&2
     else
       git am --abort || true
-      echo >&2 "INFO: Apply patch failed"
+      echo "INFO: Apply patch failed" >&2
       exit 1
     fi
     patch=

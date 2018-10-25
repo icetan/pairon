@@ -50,9 +50,9 @@ start_pull() {
   info "Listening"
   $ssh_mode tail -f -n0 "$REMOTE_FILE/produce" | while IFS= read -r line; do
     if test "$line" = "___END_OF_MESSAGE___"; then
-      echo >&2 "=== START PULLING PATCH ==="
-      echo >&2 "$patch"
-      echo >&2 "=== END PULLING PATCH ==="
+      echo "=== START PULLING PATCH ===" >&2
+      echo "$patch" >&2
+      echo "=== END PULLING PATCH ===" >&2
 
       hash=$(echo "$patch" | head -n1 | grep -oE " [a-f0-9]{40} ")
 
