@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-. "$(dirname $(realpath $0))/common.sh"
+# shellcheck source=common.sh
+. "$(dirname "$(realpath "$0")")/common.sh"
 
 while test "$1"; do
   case "$1" in
@@ -29,7 +30,7 @@ REMOTE_FILE="${REMOTE#*:}"
 echo "$REMOTE" | grep -q : && ssh_mode="ssh $SSH_HOST -- "
 
 autosync() {
-  (cd "$GIT_WORK_TREE"
+  (cd "$GIT_WORK_TREE" || exit 1
     fsw . '.pairon|.git' \
       | xargs -L1 -I% sh -c '. "'"$SCRIPT_DIR/sync_patch.sh"'";sync_patch "%"'
   )
@@ -55,7 +56,7 @@ start_pull() {
 
       hash=$(echo "$patch" | head -n1 | grep -oE " [a-f0-9]{40} ")
 
-      if git rev-list --quiet -n1 $hash; then
+      if git rev-list --quiet -n1 "$hash" >/dev/null 2>&1; then
         info "Patch already applied, skipping"
       elif { echo "$patch" | git am; }; then
         info "Applied patch successfully"

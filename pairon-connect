@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-. "$(dirname $(realpath $0))/common.sh"
+# shellcheck source=common.sh
+. "$(dirname "$(realpath "$0")")/common.sh"
 
 connect() {
   setrepo "$1"
@@ -19,7 +20,7 @@ if test -n "$REMOTE"; then
   echo "$REMOTE" | grep -q : && ssh_mode="ssh ${REMOTE%%:*} -- "
 
   $ssh_mode test -d "$REMOTE_FILE" || remote_empty=1
-  test -d "$LOCAL" && test -n "`find "$LOCAL"/* -maxdepth 0`" || local_empty=1
+  test -d "$LOCAL" && test -n "$(find "$LOCAL"/* -maxdepth 0)" || local_empty=1
 
   if test -n "$local_empty" && test -n "$remote_empty"; then
     pairon init "$REMOTE"

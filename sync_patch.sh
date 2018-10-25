@@ -1,3 +1,4 @@
+#!/bin/sh
 sync_commit() {
   git add -A "${1-$GIT_WORK_TREE}"
   git commit -m "pairon auto commito"

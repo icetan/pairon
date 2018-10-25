@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-. "$(dirname $(realpath $0))/common.sh"
+# shellcheck source=common.sh
+. "$(dirname "$(realpath "$0")")/common.sh"
 
 usage() {
   test -n "$1" && echo >&2 "Error: $1"
@@ -14,12 +15,12 @@ $PLUGINS
   exit 1
 }
 
-PLUGINS="$(cd "$SCRIPT_DIR"; find . -type f -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
+PLUGINS="$(cd "$SCRIPT_DIR" || exit 1; find . -type f -executable -path "./pairon-*" | sed 's/.*pairon-//' | sort | uniq)"
 CMD="$1"
 
 if { test -n "$CMD" && echo "$PLUGINS" | grep -Eq "^$CMD$"; }; then
   shift
-  exec "$SCRIPT_DIR/pairon-$CMD" $@
+  exec "$SCRIPT_DIR/pairon-$CMD" "$@"
 else
   usage "No command: '$CMD'"
 fi

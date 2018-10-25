@@ -1,20 +1,27 @@
+#!/bin/sh
 exec 0<&-
 
+export SCRIPT_NAME
 SCRIPT_NAME="$(basename "$0")"
-SCRIPT_DIR="$(dirname $(realpath "$0"))"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 export GIT_CONFIG_NOSYSTEM=1
 unset XDG_CONFIG_HOME
 unset HOME
 
+# shellcheck source=sync_patch.sh
 . "$SCRIPT_DIR/sync_patch.sh"
 
 alias linebuf='stdbuf -eL -oL'
 rtrav() {
-  test -e $2/$1 && printf %s "$2" || { test $2 != / && rtrav $1 `dirname $2`; }
+  if test -e "$2/$1"; then
+    printf %s "$2"
+  else
+    { test "$2" != / && rtrav "$1" "$(dirname "$2")"; }
+  fi
 }
-info() { echo >&2 INFO: $@; }
-warn() { echo >&2 WARNING: $@; }
+info() { echo >&2 "INFO: $*"; }
+warn() { echo >&2 "WARNING: $*"; }
 die() {
   test -n "$1" && echo >&2 "Error: $1"
   exit 1
@@ -24,7 +31,7 @@ stop() {
   exit 0
 }
 initrepo() {
-  (cd "$1"
+  (cd "$1" || exit 1
     touch .pairon/produce
     git config -f .pairon/config core.sharedRepository group
     git config -f .pairon/config core.excludesfile .pairon/ignore
@@ -35,7 +42,7 @@ initrepo() {
   )
 }
 setrepo() {
-  worktree=`pairon_path "$1"` || die "Not a pairon repo"
+  worktree=$(pairon_path "$1") || die "Not a pairon repo"
   export GIT_WORK_TREE="$worktree"
   export GIT_DIR="$worktree/.pairon"
   export CONSUME_FILE="$worktree/.pairon/consume"
@@ -54,8 +61,8 @@ sync_merge() {
   }
 }
 sync_push() {
-  RETRY_COUNT=`expr $RETRY_COUNT + 1`
-  test $RETRY_COUNT -le $MAX_RETRY || die "Reached max pull retry count"
+  RETRY_COUNT="$((RETRY_COUNT + 1))"
+  test "$RETRY_COUNT" -le "$MAX_RETRY" || die "Reached max pull retry count"
   git push || {
     sync_merge || true
     echo >&2 "INFO: Retrying $RETRY_COUNT"
@@ -70,8 +77,8 @@ sync_force() {
 }
 
 fsw() {
-  local path="$1"
-  local exclude="$2"
+  path="$1"
+  exclude="$2"
   if command -v inotifywait; then
     info "Using inotify"
     inotifywait -mr --exclude "$exclude" \

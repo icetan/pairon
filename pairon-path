@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-. "$(dirname $(realpath $0))/common.sh"
+# shellcheck source=common.sh
+. "$(dirname "$(realpath "$0")")/common.sh"
 
 while test "$1"; do
   case "$1" in
@@ -11,5 +12,5 @@ while test "$1"; do
   esac
 done
 
-path="`pairon_path "${LOCAL:-.}"`"
+path="$(pairon_path "${LOCAL:-.}")"
 test "$quiet" || echo "$path"
