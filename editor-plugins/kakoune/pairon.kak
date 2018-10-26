@@ -1,7 +1,7 @@
 def -docstring %{autosave-enable: enable autosave for this file buffer} \
-autosave-enable %{ %sh{
+autosave-enable %{ eval %sh{
   test -n "${kak_buffile}" \
-    && printf %s\\n 'hook -group autosave buffer NormalIdle .* %{ %sh{
+    && printf %s\\n 'hook -group autosave buffer NormalIdle .* %{ eval %sh{
       test "${kak_modified}" = "true" && echo "exec -save-regs : :w<ret>"
     }}'
 }}
@@ -17,7 +17,7 @@ pairon-sync %{ %sh{
 }}
 
 def -docstring %{pairon-listen: start a pairon listener in current directory} \
-pairon-listen %{ %sh{
+pairon-listen %{ eval %sh{
     output=$(mktemp -d "${TMPDIR:-/tmp}"/kak-pairon.XXXXXXXX)/fifo
     mkfifo ${output}
     ( pairon listen > ${output} 2>&1 ) > /dev/null 2>&1 < /dev/null &
@@ -38,7 +38,7 @@ decl -docstring "list of pairon buffers" \
     str-list pairon_buflist
 
 def -docstring %{pairon-enable: enable pairon sync} \
-pairon-enable %{ %sh{
+pairon-enable %{ eval %sh{
     test -n "${kak_buffile}" && pairon path -q "${kak_buffile}" \
       && printf %s\\n '
         set-option -add global pairon_buflist %val{buffile}
@@ -49,7 +49,7 @@ pairon-enable %{ %sh{
 
 def -docstring %{pairon-global-enable: enable pairon sync} \
 pairon-global-enable %{
-  eval -buffer %sh{ echo "${kak_buflist}" | sed 's/:/,/g' } %{
+  eval -buffer %sh{ echo "${kak_opt_pairon_buflist}" | sed "s/'//g;s/ /,/g" } %{
     pairon-enable
   }
   hook -group pairon global BufCreate .* pairon-enable
@@ -58,7 +58,7 @@ pairon-global-enable %{
 def -docstring %{pairon-disable: disable pairon sync} \
 pairon-disable %{
   remove-hooks global pairon
-  eval -buffer %sh{ echo "${kak_opt_pairon_buflist}" | sed 's/:/,/g' } %{
+  eval -buffer %sh{ echo "${kak_opt_pairon_buflist}" | sed "s/'//g;s/ /,/g" } %{
     autosave-disable
     set-option buffer autoreload ask
   }
