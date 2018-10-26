@@ -20,5 +20,5 @@ test "$LOCAL" || die "No local directory given"
 git clone --template="$SCRIPT_DIR/template" "$REMOTE/.pairon" "$LOCAL"
 mv "$LOCAL/.git" "$LOCAL/.pairon"
 chmod -R g+rw "$LOCAL"
-chmod g+s "$(find "$LOCAL" -type d)"
+find "$LOCAL" -type d -exec chmod g+s {} \;
 initrepo "$LOCAL"
