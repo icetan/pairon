@@ -50,11 +50,10 @@ start_pull() {
   info "Listening"
   $ssh_mode tail -f -n0 "$REMOTE_FILE/produce" | while IFS= read -r line; do
     if test "$line" = "___END_OF_MESSAGE___"; then
-      echo "=== START PULLING PATCH ===" >&2
+      hash="$(echo "$patch" | head -n1 | grep -oE "\<[a-f0-9]{40}\>")"
+      echo "=== START PULLING PATCH $hash ===" >&2
       echo "$patch" >&2
-      echo "=== END PULLING PATCH ===" >&2
-
-      hash=$(echo "$patch" | head -n1 | grep -oE " [a-f0-9]{40} ")
+      echo "=== END PULLING PATCH $hash ===" >&2
 
       if git rev-list --quiet -n1 "$hash" >/dev/null 2>&1; then
         info "Patch already applied, skipping"
