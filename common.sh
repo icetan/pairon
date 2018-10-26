@@ -38,7 +38,7 @@ initrepo() {
     git config -f .pairon/config user.email "$(whoami)@$(hostname)"
     git config -f .pairon/config user.name "$(whoami)"
     git config -f .pairon/config receive.denyCurrentBranch ignore
-    git config -f .pairon/config --unset core.worktree
+    git config -f .pairon/config --unset core.worktree || true
   )
 }
 setrepo() {

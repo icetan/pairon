@@ -32,8 +32,10 @@ if test -n "$REMOTE"; then
   elif test -n "$local_empty" && test -z "$remote_empty"; then
     pairon clone "$REMOTE" "$LOCAL"
   elif test -z "$local_empty" && test -z "$remote_empty"; then
-    pairon init "$LOCAL"
-    connect "$LOCAL" "$REMOTE"
+    dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
+    pairon clone "$REMOTE" "$dest"
+    mv "$dest/.pairon" "$LOCAL/.pairon"
+    rm -rf "$dest"
   fi
 fi
 
