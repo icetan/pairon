@@ -5,7 +5,6 @@ sync_commit() {
 }
 sync_patch() {
   set -x
-  #test -e "$CONSUME_FILE" && \
   sync_commit "$1" >/dev/null 2>&1 \
     && { git format-patch --stdout -p HEAD^;echo ___END_OF_MESSAGE___; } >> "$CONSUME_FILE"
 }

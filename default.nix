@@ -13,7 +13,7 @@ in mkDerivation rec {
   installPhase = ''
     runHook preInstall
     mkdir -p $out/bin $out/src
-    cp -r pairon* *.sh template $out/src
+    cp -r pairon* *.sh template editor-plugins $out/src
     makeWrapper $out/src/pairon $out/bin/pairon \
       --prefix PATH : ${makeBinPath [
         openssh
