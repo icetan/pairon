@@ -57,7 +57,7 @@ start_pull() {
 
       if git rev-list --quiet -n1 "$hash" >/dev/null 2>&1; then
         info "Patch already applied, skipping"
-      elif { echo "$patch" | git am; }; then
+      elif { echo "$patch" | git am --ignore-date; }; then
         info "Applied patch successfully"
       else
         git am --show-current-patch
