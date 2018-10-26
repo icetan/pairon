@@ -60,6 +60,7 @@ start_pull() {
       elif { echo "$patch" | git am; }; then
         info "Applied patch successfully"
       else
+        git am --show-current-patch
         git am --abort || true
         info "Apply patch failed, rebasing"
         sync_force "$LOCAL"
