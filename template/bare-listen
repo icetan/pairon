@@ -16,14 +16,20 @@ while IFS= read -r line; do
     echo "$patch" >&2
     echo "=== END PUSHED PATCH ===" >&2
 
-    if { echo "$patch" | git am; }; then
-      { echo "$patch";echo ___END_OF_MESSAGE___; } >> "$GIT_DIR/produce"
-      echo "INFO: Applied patch successfully" >&2
-    else
-      git am --abort || true
-      echo "INFO: Apply patch failed" >&2
-      exit 1
-    fi
+    echo "$patch" | sed -n '2s/^From: \(.*\) <\(.*\)>$/\1\n\2/p' | {
+      read -r GIT_COMMITTER_NAME
+      read -r GIT_COMMITTER_EMAIL
+      export GIT_COMMITTER_NAME
+      export GIT_COMMITTER_EMAIL
+      if { echo "$patch" | git am --ignore-date; }; then
+        { echo "$patch";echo ___END_OF_MESSAGE___; } >> "$GIT_DIR/produce"
+        echo "INFO: Applied patch successfully" >&2
+      else
+        git am --abort || true
+        echo "INFO: Apply patch failed" >&2
+        exit 1
+      fi
+    }
     patch=
   else
     patch="$patch$line

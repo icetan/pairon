@@ -51,20 +51,27 @@ start_pull() {
   $ssh_mode tail -f -n0 "$REMOTE_FILE/produce" | while IFS= read -r line; do
     if test "$line" = "___END_OF_MESSAGE___"; then
       hash="$(echo "$patch" | head -n1 | grep -oE "\\<[a-f0-9]{40}\\>")"
+
       echo "=== START PULLING PATCH $hash ===" >&2
       echo "$patch" >&2
       echo "=== END PULLING PATCH $hash ===" >&2
 
-      if git rev-list --quiet -n1 "$hash" >/dev/null 2>&1; then
-        info "Patch already applied, skipping"
-      elif { echo "$patch" | git am --ignore-date; }; then
-        info "Applied patch successfully"
-      else
-        git am --show-current-patch
-        git am --abort || true
-        info "Apply patch failed, rebasing"
-        sync_force "$LOCAL"
-      fi
+      echo "$patch" | sed -n '2s/^From: \(.*\) <\(.*\)>$/\1\n\2/p' | {
+        read -r GIT_COMMITTER_NAME
+        read -r GIT_COMMITTER_EMAIL
+        export GIT_COMMITTER_NAME
+        export GIT_COMMITTER_EMAIL
+        if git rev-list --quiet -n1 "$hash" >/dev/null 2>&1; then
+          info "Patch already applied, skipping"
+        elif { echo "$patch" | git am --ignore-date; }; then
+          info "Applied patch successfully"
+        else
+          git am --show-current-patch
+          git am --abort || true
+          info "Apply patch failed, rebasing"
+          sync_force "$LOCAL"
+        fi
+      }
       patch=
     else
       patch="$patch$line
