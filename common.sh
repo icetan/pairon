@@ -6,6 +6,7 @@ SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 export GIT_CONFIG_NOSYSTEM=1
+export GIT_PAGER=cat
 unset XDG_CONFIG_HOME
 unset HOME
 
