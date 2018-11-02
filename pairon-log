@@ -5,4 +5,4 @@ set -e
 . "$(dirname "$(realpath "$0")")/common.sh"
 
 setrepo .
-git log --graph -p --color --date=relative --pretty=format:'%Cblue<%an>%Creset edited %ad'
+git log --graph --color --date=relative --pretty=format:'%Cblue<%an>%Creset edited %ad' "$@"
