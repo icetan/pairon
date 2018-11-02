@@ -4,7 +4,7 @@ let
   inherit (lib) cleanSource makeBinPath;
   inherit (stdenv) mkDerivation isLinux;
 in mkDerivation rec {
-  version = "0.0.2";
+  version = "0.0.3";
   name = "pairon-${version}";
   buildInputs = [ makeWrapper ];
   src = cleanSource ./.;
