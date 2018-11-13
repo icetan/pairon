@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+# shellcheck source=common.sh
+. "$(dirname "$(realpath "$0")")/common.sh"
+
+IGNORE_PATH="${1}"
+
+setrepo .
+
+if [ "$IGNORE_PATH" ]; then
+  echo "$IGNORE_PATH" >> "$GIT_DIR/ignore"
+fi
+
+( cd "$GIT_WORK_TREE"
+  remove="$(git ls-files -i --exclude-from "$GIT_DIR/ignore")"
+  if [ "$remove" ]; then
+      echo "$remove" | xargs -L1 git rm --cached
+  fi
+)
