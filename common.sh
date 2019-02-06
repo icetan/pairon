@@ -55,7 +55,7 @@ pairon_path () {
 MAX_RETRY=20
 sync_merge() {
   git pull --commit -s recursive -X ours || {
-    echo "WARNING: Couldn't resolve merge, doing a hard reset" >&2
+    warn "Couldn't resolve merge, doing a hard reset"
     git merge --abort || true
     git reset --hard origin/master
   }

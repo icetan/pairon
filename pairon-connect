@@ -32,10 +32,9 @@ if test -n "$REMOTE"; then
     pairon clone "$REMOTE" "$LOCAL"
   elif test -z "$local_empty" && test -z "$remote_empty"; then
     if pairon path >/dev/null; then
-      echo >&2 "Error: this directory is already connected.
+      die "Error: this directory is already connected.
 
   Remove '$(pairon path)/.pairon' to connect to a different remote."
-      exit 1
     fi
     dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
     pairon clone "$REMOTE" "$dest"
