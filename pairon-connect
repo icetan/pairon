@@ -6,10 +6,9 @@ set -e
 
 connect() {
   setrepo "$1"
-  git remote add origin "$2/.pairon" \
-    || git remote set-url origin "$2/.pairon" \
-    || true
-  git push -u origin master >/dev/null 2>&1 || true
+  git remote add origin "$2/.pairon" 2>/dev/null \
+    || git remote set-url origin "$2/.pairon" 2>/dev/null
+  git push -u origin master >/dev/null 2>&1
 }
 
 REMOTE="${1}"
@@ -20,21 +19,27 @@ if test -n "$REMOTE"; then
   echo "$REMOTE" | grep -q : && ssh_mode="ssh ${REMOTE%%:*} -- "
 
   $ssh_mode test -d "$REMOTE_FILE" || remote_empty=1
-  test -d "$LOCAL" && test -n "$(find "$LOCAL"/* -maxdepth 0)" || local_empty=1
+  test -d "$LOCAL" && test -n "$(find "$LOCAL"/* -maxdepth 0 2>/dev/null)" || local_empty=1
 
   if test -n "$local_empty" && test -n "$remote_empty"; then
     pairon init "$REMOTE"
     pairon clone "$REMOTE" "$LOCAL"
   elif test -z "$local_empty" && test -n "$remote_empty"; then
     pairon init --no-commit "$REMOTE"
-    pairon init "$LOCAL"
+    pairon path >/dev/null || pairon init "$LOCAL"
     connect "$LOCAL" "$REMOTE"
   elif test -n "$local_empty" && test -z "$remote_empty"; then
     pairon clone "$REMOTE" "$LOCAL"
   elif test -z "$local_empty" && test -z "$remote_empty"; then
+    if pairon path >/dev/null; then
+      echo >&2 "Error: this directory is already connected.
+
+  Remove '$(pairon path)/.pairon' to connect to a different remote."
+      exit 1
+    fi
     dest="$(mktemp -d "${TMPDIR:-/tmp}"/pairon.XXXXXXXX)"
     pairon clone "$REMOTE" "$dest"
-    mv "$dest/.pairon" "$LOCAL/.pairon"
+    mv "$dest/.pairon" "$LOCAL/"
     rm -rf "$dest"
   fi
 fi
