@@ -1,6 +1,7 @@
 #!/bin/sh
 exec 0<&-
 
+export TZ=UTC
 export SCRIPT_NAME
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
