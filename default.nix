@@ -16,8 +16,7 @@ in mkDerivation rec {
     cp -r pairon* *.sh template editor-plugins $out/src
     makeWrapper $out/src/pairon $out/bin/pairon \
       --prefix PATH : ${makeBinPath [
-        openssh
-        git
+        openssh git coreutils
         (if isLinux then inotify-tools else fswatch)
       ]}
     runHook postInstall
