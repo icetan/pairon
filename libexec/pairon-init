@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# shellcheck source=common.sh
-. "$(dirname "$(realpath "$0")")/common.sh"
+# shellcheck source=lib/common.sh
+. "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
   case "$1" in
@@ -18,7 +18,7 @@ mkrepo() {
   (cd "$1" || exit 1
     export GIT_WORK_TREE="$PWD"
     export GIT_DIR="$GIT_WORK_TREE/.pairon"
-    git init --share=group --template="$SCRIPT_DIR/template"
+    git init --share=group --template="$TEMPLATE_DIR"
     initrepo "$PWD"
     if test -z "$no_commit"; then
       git add .

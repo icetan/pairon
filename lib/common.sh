@@ -2,16 +2,22 @@
 exec 0<&-
 
 export TZ=UTC
-export SCRIPT_NAME
+# shellcheck disable=SC2034
 SCRIPT_NAME="$(basename "$0")"
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+SCRIPT_PATH="$(realpath "$0")"
+INSTALL_DIR="${SCRIPT_PATH%/*/*}"
+# shellcheck disable=SC2034
+LIBEXEC_DIR="$INSTALL_DIR/libexec"
+LIB_DIR="$INSTALL_DIR/lib"
+# shellcheck disable=SC2034
+TEMPLATE_DIR="$INSTALL_DIR/template"
 
 export GIT_CONFIG_NOSYSTEM=1
 unset XDG_CONFIG_HOME
 unset HOME
 
-# shellcheck source=sync_patch.sh
-. "$SCRIPT_DIR/sync_patch.sh"
+# shellcheck source=lib/sync_patch.sh
+. "$LIB_DIR/sync_patch.sh"
 
 alias linebuf='stdbuf -eL -oL'
 rtrav() {

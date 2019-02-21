@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+# shellcheck source=lib/common.sh
+. "$(dirname "$(realpath "$0")")/../lib/common.sh"
+
+usage() {
+  test -n "$1" && echo "Error: $1" >&2
+  echo "
+USAGE: $SCRIPT_NAME COMMAND OPTIONS
+
+-- COMMANDS --
+$COMMANDS
+" >&2
+  exit 1
+}
+
+COMMANDS="$(find "$LIBEXEC_DIR" -type f -name 'pairon-*' | sed 's/.*pairon-//' | sort | uniq)"
+CMD="$1"
+
+if { test -n "$CMD" && echo "$COMMANDS" | grep -Eq "^$CMD$"; }; then
+  shift
+  exec "$LIBEXEC_DIR/pairon-$CMD" "$@"
+else
+  usage "No command: '$CMD'"
+fi

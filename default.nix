@@ -3,6 +3,10 @@
 let
   inherit (lib) cleanSource makeBinPath;
   inherit (stdenv) mkDerivation isLinux;
+  runtimePaths = makeBinPath [
+    openssh git coreutils findutils
+    (if isLinux then inotify-tools else fswatch)
+  ];
 in mkDerivation rec {
   version = "0.1.2";
   name = "pairon-${version}";
@@ -12,19 +16,15 @@ in mkDerivation rec {
 
   installPhase = ''
     runHook preInstall
-    mkdir -p $out/bin $out/src
-    cp -r pairon* *.sh template editor-plugins $out/src
-    makeWrapper $out/src/pairon $out/bin/pairon \
-      --prefix PATH : ${makeBinPath [
-        openssh git coreutils
-        (if isLinux then inotify-tools else fswatch)
-      ]}
+    mkdir -p $out
+    cp -r -t $out bin lib libexec template editor-plugins
     runHook postInstall
   '';
 
   fixupPhase = ''
     runHook preFixup
-    sed -i"" 's|#!/bin/sh|#!${dash}/bin/dash|' `find $out/src -type f -executable -maxdepth 1`
+    sed -i"" '2iexport PATH="${runtimePaths}:$PATH"' $out/bin/pairon
+    sed -i"" 's|#!/bin/sh|#!${dash}/bin/dash|' $out/bin/* $out/libexec/*
     runHook postFixup
   '';
 }

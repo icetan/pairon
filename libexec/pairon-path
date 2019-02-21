@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-# shellcheck source=common.sh
-. "$(dirname "$(realpath "$0")")/common.sh"
+# shellcheck source=lib/common.sh
+. "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
   case "$1" in

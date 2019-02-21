@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+# shellcheck source=lib/common.sh
+. "$(dirname "$(realpath "$0")")/../lib/common.sh"
+
+setrepo .
+git remote -v | awk '{ gsub(/\/\.pairon$/, "", $2); print $2, $3 }'
