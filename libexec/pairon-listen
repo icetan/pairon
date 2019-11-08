@@ -81,14 +81,14 @@ start_pull() {
 
 sync_force "$LOCAL"
 
-start_pull &
+(start_pull; kill -TERM 0) &
 echo $! >> "$lock_file"
 
-start_push &
+(start_push; kill -TERM 0) &
 echo $! >> "$lock_file"
 
 if test ! "$no_autosync"; then
-  autosync &
+  (autosync; kill -TERM 0) &
   echo $! >> "$lock_file"
 fi
 
