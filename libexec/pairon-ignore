@@ -4,13 +4,17 @@ set -e
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
-IGNORE_PATH="${1}"
-
 setrepo .
 
-if [ "$IGNORE_PATH" ]; then
-  echo "$IGNORE_PATH" >> "$GIT_DIR/ignore"
-fi
+touch "$GIT_DIR/ignore"
+while [ "$1" ]; do
+  if grep -q "^$1$" "$GIT_DIR/ignore"; then
+    true
+  else
+    echo "$1" >> "$GIT_DIR/ignore"
+  fi
+  shift
+done
 
 ( cd "$GIT_WORK_TREE"
   remove="$(git ls-files -i --exclude-from "$GIT_DIR/ignore")"
@@ -18,3 +22,6 @@ fi
       echo "$remove" | xargs -L1 git rm --cached
   fi
 )
+
+echo >&2 "Ignoring:"
+cat "$GIT_DIR/ignore"
