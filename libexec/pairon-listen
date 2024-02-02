@@ -1,17 +1,33 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-listen [OPTIONS..] [LOCAL]
+
+Start the process that listens to local and remote changes and syncs both ways.
+
+LOCAL - Local path to clone repo to
+
+Options:
+    --help, -h          Show this message
+    --no-autosync, -n
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
-  case "$1" in
-    -n|--no-autosync) no_autosync=1;shift;;
-    -*) die "$1 is not an option";;
-    *) arg="$1";shift;;
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) usage;;
+    --no-autosync|-n) no_autosync=1;shift;;
+    -*) usage "'$arg' is not an option";;
+    *)
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      usage "'$arg' is not an option";;
   esac
 done
-LOCAL="${arg:-.}"
+
+LOCAL="${LOCAL:-.}"
 
 setrepo "$LOCAL"
 
@@ -32,7 +48,8 @@ echo "$REMOTE" | grep -q : && ssh_mode="ssh $SSH_HOST -- "
 autosync() {
   (cd "$GIT_WORK_TREE" || exit 1
     fsw . '.pairon|.git' \
-      | xargs -L1 -I% sh -c '. "'"$LIB_DIR/sync_patch.sh"'";sync_patch "%"'
+      | xargs -I% $PAIRON_SHELL \
+        -c '. "'"$LIB_DIR/sync_patch.sh"'";sync_patch "%"'
   )
 }
 

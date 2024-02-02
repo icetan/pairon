@@ -2,6 +2,7 @@
 exec 0<&-
 
 export TZ=UTC
+export LC_ALL=C
 # shellcheck disable=SC2034
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_PATH="$(realpath "$0")"
@@ -11,6 +12,7 @@ LIBEXEC_DIR="$INSTALL_DIR/libexec"
 LIB_DIR="$INSTALL_DIR/lib"
 # shellcheck disable=SC2034
 TEMPLATE_DIR="$INSTALL_DIR/template"
+PARION_SHELL="${PAIRON_SHELL:-sh}"
 
 export GIT_CONFIG_NOSYSTEM=1
 unset XDG_CONFIG_HOME
@@ -20,6 +22,7 @@ unset HOME
 . "$LIB_DIR/sync_patch.sh"
 
 alias linebuf='stdbuf -eL -oL'
+
 rtrav() {
   if test -e "$2/$1"; then
     printf %s "$2"
@@ -27,12 +30,18 @@ rtrav() {
     { test "$2" != / && rtrav "$1" "$(dirname "$2")"; }
   fi
 }
-info() { echo "INFO: $*" >&2; }
-warn() { echo "WARNING: $*" >&2; }
+
+info() { echo "Info: $*" >&2; }
+warn() { echo "Warning: $*" >&2; }
 die() {
-  test -n "$1" && echo "Error: $1" >&2
-  exit 1
+  test -z "$*" || { echo "Error: $*\n" >&2; exit 1; }
+  exit
 }
+usage() {
+  test -z "$USAGE" || echo "$USAGE\n\nVersion: ${PAIRON_VERSION:-Unknown}\n" >&2
+  die "$@"
+}
+
 stop() {
   test -n "$1" && echo "$1" >&2
   exit 0
@@ -49,7 +58,7 @@ initrepo() {
   )
 }
 setrepo() {
-  worktree=$(pairon_path "$1") || die "Not a pairon repo"
+  local worktree=$(pairon_path "$1") || die "Not a pairon repo"
   export GIT_WORK_TREE="$worktree"
   export GIT_DIR="$worktree/.pairon"
   export CONSUME_FILE="$worktree/.pairon/consume"
@@ -72,7 +81,7 @@ sync_push() {
   test "$RETRY_COUNT" -le "$MAX_RETRY" || die "Reached max pull retry count"
   git push || {
     sync_merge || true
-    echo "INFO: Retrying $RETRY_COUNT" >&2
+    info "Retrying $RETRY_COUNT" >&2
     sync_push
   }
 }
@@ -84,9 +93,9 @@ sync_force() {
 }
 
 fsw() {
-  path="$1"
-  exclude="$2"
-  if command -v inotifywait; then
+  local path="$1"
+  local exclude="$2"
+  if command -v inotifywait >/dev/null; then
     info "Using inotify"
     inotifywait -mr --exclude "$exclude" \
        -e modify,create,delete,move "$path" \
@@ -96,7 +105,7 @@ fsw() {
   else
     info "Using fswatch"
     fswatch -r --event Created --event Updated --event Removed \
-       --event Renamed \ --event MovedFrom --event MovedTo \
+       --event Renamed --event MovedFrom --event MovedTo \
        -f '%s' -t --format "'%p'" \
        -e "$(echo "$exclude" | sed 's/|/\\|/g')" "$path" \
     | linebuf uniq \

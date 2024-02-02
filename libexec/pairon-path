@@ -1,16 +1,33 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-path [OPTIONS..] [PATH]
+
+Test that a path is in a pairon repo and print the repo root path.
+
+PATH - Path to check (default: .)
+
+Options:
+    --help, -h          Show this message
+    --quiet, -q         Do not print path (only test if in repo)
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
-  case "$1" in
-    -q|--quiet) quiet=1;shift;;
-    -*) die "$1 is not an option";;
-    *) LOCAL="$1";shift;;
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) usage;;
+    --quiet|-q) quiet=1;;
+    -*) usage "'$arg' is not an option";;
+    *)
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      usage "'$arg' is not an option";;
   esac
 done
 
-path="$(pairon_path "${LOCAL:-.}")"
+LOCAL="${LOCAL:-.}"
+
+path="$(pairon_path "$LOCAL")"
 test "$quiet" || echo "$path"

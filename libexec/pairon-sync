@@ -1,28 +1,45 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-sync [OPTIONS..] [LOCAL]
+
+Get local repo up to date with remote.
+
+LOCAL - Local repo path (default: .)
+
+Options:
+    --help, -h          Show this message
+    --force, -f         Force a full sync
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
-  case "$1" in
-    -f|--force) force=1;shift;;
-    -*) die "$1 is not an option";;
-    *) arg="${1:-.}";shift;;
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) usage;;
+    --force|-f) force=1;;
+    -*) usage "'$arg' is not an option";;
+    *)
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      usage "'$arg' is not an option";;
   esac
 done
 
-arg="${arg:-.}"
-if test -f "$arg"; then
-  LOCAL="$(cd "$(dirname "$arg")";pwd)"
-  LOCAL_FILE="$LOCAL/$(basename "$arg")";
-else
-  LOCAL="$(cd "$arg";pwd)";
-  LOCAL_FILE="$LOCAL";
-fi
-setrepo "$LOCAL"
+LOCAL="${LOCAL:-.}"
 
-if test -n "$force"; then
+if test -f "$LOCAL"; then
+  LOCAL_PATH="$(cd "$(dirname "$LOCAL")";pwd)"
+  LOCAL_FILE="$LOCAL_PATH/$(basename "$LOCAL")";
+else
+  LOCAL_PATH="$(cd "$LOCAL";pwd)";
+  LOCAL_FILE="$LOCAL_PATH";
+fi
+
+setrepo "$LOCAL_PATH"
+
+if test "$force"; then
   sync_force "$LOCAL_FILE"
 else
   sync_patch "$LOCAL_FILE" || info "Nothing to sync"

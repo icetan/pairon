@@ -1,6 +1,18 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-connect REMOTE [LOCAL] [OPTIONS..]
+
+Porcelain for cloning/setting remote of a repo/directory and starting
+`parion-listen`.
+
+REMOTE    An URL to the pairon repo to clone (e.g. user@host:path)
+LOCAL     Local path to clone repo to
+
+Options:
+    --help, -h    Show this message
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
@@ -11,8 +23,19 @@ connect() {
   git push -u origin master >/dev/null 2>&1
 }
 
-REMOTE="${1}"
-LOCAL="${2-.}"
+while test "$1"; do
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) die;;
+    -*) usage "'$arg' is not an option";;
+    *)
+      test "$REMOTE" || { REMOTE="$arg";continue; }
+      test "$LOCAL" || { LOCAL="$arg";continue; }
+      usage "'$arg' is not an option";;
+  esac
+done
+
+LOCAL="${LOCAL:-.}"
 
 if test -n "$REMOTE"; then
   REMOTE_FILE="${REMOTE#*:}"
@@ -32,7 +55,7 @@ if test -n "$REMOTE"; then
     pairon clone "$REMOTE" "$LOCAL"
   elif test -z "$local_empty" && test -z "$remote_empty"; then
     if pairon path >/dev/null; then
-      die "Error: this directory is already connected.
+      die "This directory is already connected.
 
   Remove '$(pairon path)/.pairon' to connect to a different remote."
     fi

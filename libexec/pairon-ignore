@@ -1,23 +1,44 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-ignore [FILES..]
+
+Add files to pairons ignore list and print list.
+
+FILES     List of files to add to .pairon/ignore file
+
+Options:
+    --help, -h    Show this message
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 setrepo .
 
-touch "$GIT_DIR/ignore"
+files=""
+
 while [ "$1" ]; do
-  if grep -q "^$1$" "$GIT_DIR/ignore"; then
-    true
-  else
-    echo "$1" >> "$GIT_DIR/ignore"
-  fi
-  shift
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) usage;;
+    -*) usage "'$arg' is not an option";;
+    *)
+      files="$files\n$(realpath --relative-to="$GIT_WORK_TREE" "$arg")"
+      ;;
+  esac
 done
 
+touch "$GIT_DIR/ignore"
+echo "$files" | while read -r file; do
+  if [ "$file" ] && ! grep -q "^$file$" "$GIT_DIR/ignore"; then
+    echo "$file" >> "$GIT_DIR/ignore"
+  fi
+done
+
+# Remove files from the index if they are ignored
 ( cd "$GIT_WORK_TREE"
-  remove="$(git ls-files -i --exclude-from "$GIT_DIR/ignore")"
+  remove="$(git ls-files -i -c --exclude-from "$GIT_DIR/ignore")"
   if [ "$remove" ]; then
       echo "$remove" | xargs -L1 git rm --cached
   fi

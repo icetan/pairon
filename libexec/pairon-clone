@@ -1,21 +1,35 @@
 #!/bin/sh
 set -e
 
+USAGE='Usage: pairon-clone REMOTE [LOCAL]
+
+Clone a remote pairon repo.
+
+REMOTE      An URL to the pairon repo to clone (e.g. user@host:path)
+LOCAL       Local path to clone repo to (default: remote dir name)
+
+Options:
+    --help, -h    Show this message
+'
+
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
 while test "$1"; do
-  case "$1" in
-    -*) die "$1 is not an option";;
-    *) arg="$1";shift
+  arg="$1";shift
+  case "$arg" in
+    --help|-h) usage;;
+    -*) usage "'$arg' is not an option";;
+    *)
       test "$REMOTE" || { REMOTE="$arg";continue; }
       test "$LOCAL" || { LOCAL="$arg";continue; }
-      ;;
+      usage "'$arg' is not an option";;
   esac
 done
 
-test "$REMOTE" || die "No remote given"
-test "$LOCAL" || die "No local directory given"
+test "$REMOTE" || usage "No remote given"
+test "$LOCAL" || LOCAL="$(basename "${REMOTE#*:}")"
+test "$LOCAL" || usage "No local directory given"
 
 git clone --template="$TEMPLATE_DIR" "$REMOTE/.pairon" "$LOCAL"
 mv "$LOCAL/.git" "$LOCAL/.pairon"

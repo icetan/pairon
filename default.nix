@@ -10,8 +10,8 @@ let
 in mkDerivation rec {
   version = "0.2.0";
   name = "pairon-${version}";
-  buildInputs = [ makeWrapper ];
   src = cleanSource ./.;
+  nativeBuildInputs = [ makeWrapper ];
   phases = "unpackPhase installPhase fixupPhase";
 
   installPhase = ''
@@ -23,8 +23,18 @@ in mkDerivation rec {
 
   fixupPhase = ''
     runHook preFixup
-    sed -i"" '2iexport PATH="${runtimePaths}:$PATH"' $out/bin/pairon
-    sed -i"" 's|#!/bin/sh|#!${dash}/bin/dash|' $out/bin/* $out/libexec/*
+
+    #sed -i"" '2iexport PATH="${runtimePaths}:$PATH"' $out/bin/pairon
+    #sed -i"" 's|#!/bin/sh|#!${dash}/bin/dash|' $out/bin/* $out/libexec/*
+
+    substituteInPlace $out/bin/* $out/libexec/* \
+      --replace "/bin/sh" "${dash}/bin/dash"
+
+    wrapProgram $out/bin/pairon \
+      --prefix PATH : "${runtimePaths}" \
+      --set PAIRON_SHELL "${dash}/bin/dash" \
+      --set PAIRON_VERSION "${version}"
+
     runHook postFixup
   '';
 }
