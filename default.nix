@@ -8,7 +8,7 @@ let
     (if isLinux then inotify-tools else fswatch)
   ];
 in mkDerivation rec {
-  version = "0.2.0";
+  version = "0.3.0";
   name = "pairon-${version}";
   src = cleanSource ./.;
   nativeBuildInputs = [ makeWrapper ];

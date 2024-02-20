@@ -29,20 +29,22 @@ while [ "$1" ]; do
   esac
 done
 
-touch "$GIT_DIR/ignore"
+ignore_file="$GIT_WORK_TREE/.paironignore"
+touch "$ignore_file"
+
 echo "$files" | while read -r file; do
-  if [ "$file" ] && ! grep -q "^$file$" "$GIT_DIR/ignore"; then
-    echo "$file" >> "$GIT_DIR/ignore"
+  if [ "$file" ] && ! grep -q "^$file$" "$ignore_file"; then
+    echo "$file" >> "$ignore_file"
   fi
 done
 
 # Remove files from the index if they are ignored
 ( cd "$GIT_WORK_TREE"
-  remove="$(git ls-files -i -c --exclude-from "$GIT_DIR/ignore")"
+  remove="$(git ls-files -i -c --exclude-from "$ignore_file")"
   if [ "$remove" ]; then
       echo "$remove" | xargs -L1 git rm --cached
   fi
 )
 
 echo >&2 "Ignoring:"
-cat "$GIT_DIR/ignore"
+cat "$ignore_file"

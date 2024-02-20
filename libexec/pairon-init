@@ -1,11 +1,9 @@
 #!/bin/sh
 set -e
 
-USAGE='Usage: pairon-init [IGNORE..]
+USAGE='Usage: pairon-init
 
 Make a new pairon repo in current directory.
-
-IGNORE     List of files to add to .pairon/ignore file
 
 Options:
     --help, -h        Show this message

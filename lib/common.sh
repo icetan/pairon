@@ -48,13 +48,15 @@ stop() {
 }
 initrepo() {
   (cd "$1" || exit 1
+    cp $TEMPLATE_DIR/ignore .paironignore
     touch .pairon/produce
     git config -f .pairon/config core.sharedRepository group
-    git config -f .pairon/config core.excludesfile .pairon/ignore
+    git config -f .pairon/config core.excludesfile .paironignore
     git config -f .pairon/config user.email "$(whoami)@$(hostname 2>/dev/null || cat /proc/sys/kernel/hostname)"
     git config -f .pairon/config user.name "$(whoami)"
     git config -f .pairon/config receive.denyCurrentBranch ignore
     git config -f .pairon/config --unset core.worktree || true
+    git config -f .pairon/config pull.ff only
   )
 }
 setrepo() {
