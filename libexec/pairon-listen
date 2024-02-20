@@ -47,7 +47,7 @@ echo "$REMOTE" | grep -q : && ssh_mode="ssh $SSH_HOST -- "
 
 autosync() {
   (cd "$GIT_WORK_TREE" || exit 1
-    fsw . '.pairon|.git' \
+    fsw . '\.pairon/|\.git/' \
       | xargs -I% $PAIRON_SHELL \
         -c '. "'"$LIB_DIR/sync_patch.sh"'";sync_patch "%"'
   )

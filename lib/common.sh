@@ -51,7 +51,7 @@ initrepo() {
     cp $TEMPLATE_DIR/ignore .paironignore
     touch .pairon/produce
     git config -f .pairon/config core.sharedRepository group
-    git config -f .pairon/config core.excludesfile .paironignore
+    git config -f .pairon/config core.excludesFile .paironignore
     git config -f .pairon/config user.email "$(whoami)@$(hostname 2>/dev/null || cat /proc/sys/kernel/hostname)"
     git config -f .pairon/config user.name "$(whoami)"
     git config -f .pairon/config receive.denyCurrentBranch ignore
@@ -99,7 +99,8 @@ fsw() {
   local exclude="$2"
   if command -v inotifywait >/dev/null; then
     info "Using inotify"
-    inotifywait -mr --exclude "$exclude" \
+    inotifywait -mr \
+       --exclude "$exclude" \
        -e modify,create,delete,move "$path" \
        --timefmt '%s' --format "%T '%w%f'" \
     | linebuf uniq \
