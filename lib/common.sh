@@ -101,7 +101,7 @@ fsw() {
     info "Using inotify"
     inotifywait -mr \
        --exclude "$exclude" \
-       -e modify,create,delete,move "$path" \
+       -e modify,create,delete,move,close_write "$path" \
        --timefmt '%s' --format "%T '%w%f'" \
     | LC_ALL=C linebuf sort -u \
     | linebuf sed 's/[0-9]* //'
