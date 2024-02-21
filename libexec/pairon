@@ -4,7 +4,7 @@ set -e
 # shellcheck source=lib/common.sh
 . "$(dirname "$(realpath "$0")")/../lib/common.sh"
 
-COMMANDS="$(find "$LIBEXEC_DIR" -type f -name 'pairon-*' | sed 's/.*pairon-//' | sort | uniq)"
+COMMANDS="$(find "$LIBEXEC_DIR" -type f -name 'pairon-*' | sed 's/.*pairon-//' | LC_ALL=C sort -u)"
 
 USAGE='Usage: pairon COMMAND [OPTIONS..]
 

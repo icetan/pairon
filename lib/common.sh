@@ -103,7 +103,7 @@ fsw() {
        --exclude "$exclude" \
        -e modify,create,delete,move "$path" \
        --timefmt '%s' --format "%T '%w%f'" \
-    | linebuf uniq \
+    | LC_ALL=C linebuf sort -u \
     | linebuf sed 's/[0-9]* //'
   else
     info "Using fswatch"
@@ -111,7 +111,7 @@ fsw() {
        --event Renamed --event MovedFrom --event MovedTo \
        -f '%s' -t --format "'%p'" \
        -e "$(echo "$exclude" | sed 's/|/\\|/g')" "$path" \
-    | linebuf uniq \
+    | LC_ALL=C linebuf sort -u \
     | linebuf sed 's/[0-9]* //'
   fi
 }
