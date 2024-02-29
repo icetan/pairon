@@ -4,7 +4,7 @@ let
   inherit (lib) cleanSource makeBinPath;
   inherit (stdenv) mkDerivation isLinux;
   runtimePaths = makeBinPath [
-    openssh git coreutils findutils
+    openssh git coreutils findutils gnused gnugrep less
     (if isLinux then inotify-tools else fswatch)
   ];
 in mkDerivation rec {
@@ -31,7 +31,7 @@ in mkDerivation rec {
       --replace "/bin/sh" "${dash}/bin/dash"
 
     wrapProgram $out/bin/pairon \
-      --prefix PATH : "${runtimePaths}" \
+      --set PATH "${runtimePaths}" \
       --set PAIRON_SHELL "${dash}/bin/dash" \
       --set PAIRON_VERSION "${version}"
 

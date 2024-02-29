@@ -56,7 +56,7 @@ initrepo() {
     git config -f .pairon/config user.name "$(whoami)"
     git config -f .pairon/config receive.denyCurrentBranch ignore
     git config -f .pairon/config --unset core.worktree || true
-    git config -f .pairon/config pull.ff only
+    git config -f .pairon/config pull.rebase true
   )
 }
 setrepo() {
@@ -72,9 +72,10 @@ pairon_path () {
 # SYNC
 MAX_RETRY=20
 sync_merge() {
-  git pull --commit -s recursive -X ours || {
+  git pull --rebase --commit -s recursive -X ours || {
     warn "Couldn't resolve merge, doing a hard reset"
     git merge --abort || true
+    git tag backup_$(date +%F_%s)
     git reset --hard origin/master
   }
 }
