@@ -18,4 +18,4 @@ case "$arg" in
 esac
 
 setrepo .
-git log --graph --color --date=relative --pretty=format:'%C(auto)%h %Cblue<%an>%Creset edited %ad' "$@"
+git log --graph --color --date=relative --pretty=format:'%C(auto)%h %Cblue<%an>%Creset edited %ad %C(auto)%d' "$@"
