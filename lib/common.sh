@@ -72,12 +72,14 @@ pairon_path () {
 # SYNC
 MAX_RETRY=20
 sync_merge() {
+  git tag merge_before_$(date +%F_%s)
   git pull --rebase --commit -s recursive -X ours || {
     warn "Couldn't resolve merge, doing a hard reset"
     git merge --abort || true
-    git tag backup_$(date +%F_%s)
+    git tag merge_before_reset_$(date +%F_%s)
     git reset --hard origin/master
   }
+  git tag merge_after_$(date +%F_%s)
 }
 sync_push() {
   RETRY_COUNT="$((RETRY_COUNT + 1))"
